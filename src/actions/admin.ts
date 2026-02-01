@@ -1,10 +1,9 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth-options";
-import { ClaimStatus } from "@prisma/client";
+
+type ClaimStatus = "NEW" | "IN_REVIEW" | "CLOSED";
 
 export async function updateClaimStatus(
     claimId: string,
@@ -14,31 +13,19 @@ export async function updateClaimStatus(
     const session = await getServerSession(authOptions);
 
     if (!session?.user || (session.user as any).role !== "ADMIN") {
-        return { error: "Unauthorized. Admin access required." };
+        return { error: "No autorizado. Se requiere acceso de administrador." };
     }
 
-    try {
-        const claim = await prisma.claim.update({
-            where: { id: claimId },
-            data: {
-                status,
-                internalNotes: internalNote || undefined,
-            },
-        });
+    // Demo mode: Just return success
+    console.log("[DEMO] Actualizando estado de reclamación:", {
+        claimId,
+        status,
+        internalNote,
+        admin: session.user.name,
+    });
 
-        await prisma.activityLog.create({
-            data: {
-                claimId,
-                action: "STATUS_UPDATED",
-                details: `Status changed to ${status} by admin ${session.user.name}. ${internalNote ? `Note: ${internalNote}` : ""
-                    }`,
-            },
-        });
-
-        revalidatePath(`/dashboard/claims/${claimId}`);
-        revalidatePath("/admin");
-        return { success: true };
-    } catch (error) {
-        return { error: "Failed to update claim" };
-    }
+    return {
+        success: true,
+        message: `🎓 Versión Demo: Estado actualizado a ${status}.`
+    };
 }

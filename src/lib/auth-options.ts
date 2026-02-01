@@ -1,7 +1,30 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+
+// Demo users for portfolio showcase - no database required
+const DEMO_USERS = [
+    {
+        id: "demo-admin-1",
+        email: "admin@fnolpro.com",
+        password: "admin123",
+        name: "Admin Demo",
+        role: "ADMIN",
+    },
+    {
+        id: "demo-client-1",
+        email: "cliente@ejemplo.com",
+        password: "cliente123",
+        name: "Cliente Demo",
+        role: "CLIENT",
+    },
+    {
+        id: "demo-client-2",
+        email: "demo@demo.com",
+        password: "demo",
+        name: "Usuario Demo",
+        role: "CLIENT",
+    },
+];
 
 export const authOptions: NextAuthOptions = {
     session: {
@@ -16,21 +39,16 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Invalid credentials");
+                    throw new Error("Credenciales inválidas");
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                });
+                // Find demo user
+                const user = DEMO_USERS.find(
+                    (u) => u.email === credentials.email && u.password === credentials.password
+                );
 
-                if (!user || !user.password) {
-                    throw new Error("User not found");
-                }
-
-                const isValid = await bcrypt.compare(credentials.password, user.password);
-
-                if (!isValid) {
-                    throw new Error("Invalid password");
+                if (!user) {
+                    throw new Error("Usuario no encontrado. Usa: demo@demo.com / demo");
                 }
 
                 return {
