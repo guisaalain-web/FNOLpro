@@ -88,7 +88,28 @@ export function FNOLForm() {
                 toast.error(result.error);
             } else {
                 toast.success("Claim submitted successfully!");
+
+                // SAVE TO LOCAL STORAGE FOR DEMO
+                try {
+                    const newClaim = {
+                        id: result.claimId || `demo-${Date.now()}`,
+                        claimNumber: result.message?.match(/FNOL-\d+/)?.[0] || "FNOL-NEW",
+                        type: values.type,
+                        status: "NEW",
+                        createdAt: new Date().toISOString(),
+                        incidentDate: values.incidentDate,
+                    };
+
+                    const existing = localStorage.getItem("fnol_demo_claims");
+                    const claims = existing ? JSON.parse(existing) : [];
+                    claims.push(newClaim);
+                    localStorage.setItem("fnol_demo_claims", JSON.stringify(claims));
+                } catch (e) {
+                    console.error("Demo save error", e);
+                }
+
                 router.push("/dashboard/claims");
+                router.refresh();
             }
         } catch (error) {
             toast.error("Failed to submit claim");
@@ -104,8 +125,8 @@ export function FNOLForm() {
                     <div key={s} className="flex flex-col items-center">
                         <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= s
-                                    ? "bg-primary border-primary text-primary-foreground"
-                                    : "border-muted text-muted-foreground"
+                                ? "bg-primary border-primary text-primary-foreground"
+                                : "border-muted text-muted-foreground"
                                 }`}
                         >
                             {s}
