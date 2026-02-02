@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { createClaim } from "@/actions/claims";
+import { createClaim, ClaimResponse } from "@/actions/claims";
 import { Calendar } from "lucide-react";
 
 // Form Schema
@@ -80,7 +80,7 @@ export function FNOLForm() {
         setLoading(true);
         try {
             // Try server action, but don't block demo if it fails
-            let result;
+            let result: ClaimResponse | undefined;
             try {
                 result = await createClaim({
                     ...values,

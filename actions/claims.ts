@@ -18,7 +18,14 @@ const claimSchema = z.object({
     damageCategory: z.string().min(2),
 });
 
-export async function createClaim(data: z.infer<typeof claimSchema>) {
+export type ClaimResponse = {
+    success?: boolean;
+    claimId?: string;
+    message?: string;
+    error?: string;
+};
+
+export async function createClaim(data: z.infer<typeof claimSchema>): Promise<ClaimResponse> {
     const session = await getServerSession(authOptions);
 
     // For the demo, we allow submission even if session check is flaky on Vercel
