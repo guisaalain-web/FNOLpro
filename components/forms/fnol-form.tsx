@@ -79,34 +79,16 @@ export function FNOLForm() {
     async function onSubmit(values: FormData) {
         setLoading(true);
         try {
-            // Try server action, but don't block demo if it fails
-            let result: ClaimResponse | undefined;
-            try {
-                result = await createClaim({
-                    ...values,
-                    incidentDate: new Date(values.incidentDate),
-                });
-            } catch (err) {
-                console.warn("Server action failed, using client fallback", err);
-                result = {
-                    success: true,
-                    claimId: `demo-${Date.now()}`,
-                    message: "FNOL-DEMO-FALLBACK"
-                };
-            }
-
-            if (result && result.error) {
-                toast.error(result.error);
-                return;
-            }
+            // SIMULATION: Wait 1 second to feel like a real request
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
             toast.success("Claim submitted successfully!");
 
             // SAVE TO LOCAL STORAGE FOR DEMO
             try {
                 const newClaim = {
-                    id: result?.claimId || `demo-${Date.now()}`,
-                    claimNumber: result?.message?.match(/FNOL-\d+/)?.[0] || "FNOL-NEW",
+                    id: `demo-${Date.now()}`,
+                    claimNumber: `FNOL-${Math.floor(100000 + Math.random() * 900000)}`,
                     type: values.type,
                     status: "NEW",
                     createdAt: new Date().toISOString(),
@@ -121,11 +103,12 @@ export function FNOLForm() {
                 console.error("Demo save error", e);
             }
 
-            router.push("/dashboard/claims");
-            router.refresh();
+            // Force hard navigation to ensure state refresh
+            window.location.href = "/dashboard/claims";
+
         } catch (error) {
+            console.error(error);
             toast.error("An unexpected error occurred");
-        } finally {
             setLoading(false);
         }
     }
